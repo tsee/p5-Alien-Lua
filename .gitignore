@@ -1,0 +1,10 @@
+MYMETA.*
+META.*
+Build
+_build
+.*.swp
+.*.swo
+_alien
+_share
+blib
+MANIFEST
