@@ -1,9 +1,41 @@
 use strict;
 use warnings;
 
-use Config qw(%Config);
+my %lua_platforms = map {$_ => 1} qw(
+  aix ansi bsd freebsd generic linux macosx mingw posix solaris
+);
 
-my $lua_platform = 'linux';
+use Config qw(%Config);
+use Getopt::Long qw(GetOptions);
+GetOptions(
+  'os=s' => \(my $lua_platform)
+);
+if ($lua_platform and not exists $lua_platforms{$lua_platform}) {
+  die "Invalid Lua platform specified on command line: '$lua_platform'. "
+      . "Valid platforms are @{[keys %lua_platforms]}";
+}
+
+# FIXME any improvements to the platform detection welcome!
+# FIXME Proper win32 won't work like this at all. Help (with patches) welcome.
+my $os = $Config{osname};
+if (not $lua_platform) {
+  if ($os =~ /^(?:linux|aix|freebsd|solaris)$/i) {
+    $lua_platform = $os;
+  }
+  elsif ($os =~ /darwin/i) {
+    $lua_platform = 'macosx';
+  }
+  elsif ($os =~ /cygwin/i) {
+    $lua_platform = 'mingw';
+  }
+  elsif ($os =~ /(?:bsd|dragonfly)/i) {
+    $lua_platform = 'bsd';
+  }
+  else {
+    $lua_platform = 'generic';
+  }
+}
+
 use Alien::Base::ModuleBuild;
 my $builder = Alien::Base::ModuleBuild->new(
   module_name => 'Alien::Lua',
@@ -11,6 +43,8 @@ my $builder = Alien::Base::ModuleBuild->new(
   configure_requires => {
     'Alien::Base' => '0.003',
     'Module::Build' => 0.38,
+    'Config' => '0',
+    'Getopt::Long' => '0',
   },
   requires => {
     'perl' => '5.14.0',
