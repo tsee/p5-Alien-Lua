@@ -60,10 +60,12 @@ my $builder = Alien::Base::ModuleBuild->new(
   },
   alien_build_commands => [
     q#%x -I../../inc -MLuaMunger -e from_to ../../inc/luaconf.h src/luaconf.h#,
-    qq#make $lua_platform INSTALL_TOP="%s"#
+    q#%x -MExtUtils::Command -e cp ../../inc/Makefile_src src/Makefile#,
+    qq#make $lua_platform INSTALL_TOP="%s" MYCFLAGS="-fPIC" MYLDFLAGS="-fPIC -shared"#,
+    qq#%x -MExtUtils::Command -e mkpath lib#, # wrestle Alien::Base to recognize shared libraries exist
   ],
   alien_install_commands => [
-    q#make install INSTALL_TOP="%s"#
+    q#make install INSTALL_TOP="%s" MYCFLAGS="-fPIC" MYLDFLAGS="-fPIC -shared"#
   ],
 );
 
