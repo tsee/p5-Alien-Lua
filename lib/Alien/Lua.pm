@@ -2,7 +2,7 @@ package Alien::Lua;
 use 5.14.0;
 use warnings;
 
-our $VERSION = '5.2.2.1';
+our $VERSION = '5.2.2.2';
 use parent 'Alien::Base';
 
 our $CanUseLuaJIT;
