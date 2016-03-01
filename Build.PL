@@ -41,7 +41,7 @@ my $builder = Alien::Base::ModuleBuild->new(
   module_name => 'Alien::Lua',
   license => 'perl',
   configure_requires => {
-    'Alien::Base' => '0.003',
+    'Alien::Base::ModuleBuild' => '0.003',
     'Module::Build' => 0.38,
     'Config' => '0',
     'Getopt::Long' => '0',
@@ -67,6 +67,11 @@ my $builder = Alien::Base::ModuleBuild->new(
   alien_install_commands => [
     q#make install INSTALL_TOP="%s" MYCFLAGS="-fPIC" MYLDFLAGS="-fPIC -shared"#
   ],
+  meta_merge => {
+    resources  => {
+      repository => "https://github.com/tsee/p5-Alien-Lua",
+    },
+  },
 );
 
 $builder->create_build_script;
