@@ -52,12 +52,18 @@ sub libs {
 }
 
 sub exe {
-    my ($class) = @_;
-    $class->runtime_prop->{command};
+    my $self = shift;
+
+    if (not ref $self or not $self->luajit) {
+        return $self->runtime_prop->{command};
+    }
+
+    return $self->luajit->exe;
 }
 
 sub alien_helper {
-    return +{ lua => sub { Alien::Lua->exe } }
+    my $exe = shift->exe;
+    return +{ lua => sub { $exe } };
 }
 
 1;
