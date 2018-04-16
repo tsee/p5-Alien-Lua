@@ -13,7 +13,8 @@ configure {
 };
 
 share {
-    requires 'Path::Tiny' => 0;
+    requires 'Path::Tiny'  => 0;
+    requires 'File::Which' => 0;
 
     my $platform = 'generic';
     for ($^O) {
@@ -38,17 +39,19 @@ share {
         my $build_dir = Path::Tiny::path( $build->install_prop->{extract} );
         local $CWD = $build_dir;
 
+        $build->runtime_prop->{command} = 'lua';
+
         $build->system('%{make}', $platform, 'test');
-        if ($platform eq 'mingw') {
-            windows_install($build);
-        }
-        else {
-            my %vars = ( install_top => $build->install_prop->{prefix} );
-            my @vars = map { $_ . '=' . $vars{$_} } keys %vars;
-            $build->system('%{make}', @vars, 'install');
+
+        return windows_install($build) if $platform eq 'mingw';
+
+        my %vars = ( install_top => $build->install_prop->{prefix} );
+        unless (File::Which::which('install')) {
+            $vars{install} = $vars{install_exec} = $vars{install_data} = 'cp -p';
         }
 
-        $build->runtime_prop->{command} = 'lua';
+        my @vars = map { uc($_) . '=' . $vars{$_} } keys %vars;
+        $build->system( '%{make}', @vars, 'install' );
     };
 
     gather sub {};
