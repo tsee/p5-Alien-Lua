@@ -88,9 +88,10 @@ Alien::Lua - Alien module for asserting a liblua is available
 
 See the documentation of Alien::Base for details on the API of this module.
 
-This module builds looks for a copy of Lua installed in your system, or
-builds the latest one downloading it from L<https://www.lua.org/ftp/>.
-It exposes the location of the installed headers and shared objects via a simple API to use by downstream dependent modules.
+This module looks for a copy of Lua installed in your system, or
+builds version 5.3.4 from sources downloaded from L<https://www.lua.org/ftp/>.
+It exposes the location of the installed headers and shared objects via a simple
+API to use by downstream dependent modules.
 
 =head1 METHODS
 
