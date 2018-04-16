@@ -43,7 +43,9 @@ share {
             windows_install($build);
         }
         else {
-            $build->system('%{make}', 'install');
+            my %vars = ( install_top => $build->install_prop->{prefix} );
+            my @vars = map { $_ . '=' . $vars{$_} } keys %vars;
+            $build->system('%{make}', @vars, 'install');
         }
 
         $build->runtime_prop->{command} = 'lua';
@@ -58,19 +60,17 @@ sub windows_install {
     my $tar     = Path::Tiny::path( $build->install_prop->{extract} );
     my $install = Path::Tiny::path( $build->install_prop->{prefix} );
 
-    my $man = $tar->child('doc');
     my $src = $tar->child('src');
 
     my $doc = $install->child('doc');
     my $bin = $install->child('bin');
     my $inc = $install->child('include');
 
-    $doc->mkpath;
-    $bin->mkpath;
-    $inc->mkpath;
+    $_->mkpath for $doc, $bin, $inc;
 
-    $_->copy( $doc->child( $_->basename ) )
-        for $man->children;
+    for ($tar->child('doc')->children) {
+        $_->copy( $doc->child( $_->basename ) )
+    }
 
     $_->copy( $bin->child( $_->basename ) )
         for $src->children(qr/[.](exe|dll)$/);
