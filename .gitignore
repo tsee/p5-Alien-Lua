@@ -2,6 +2,7 @@ MYMETA.*
 META.*
 Build
 _build
+.build/
 .*.swp
 .*.swo
 _alien

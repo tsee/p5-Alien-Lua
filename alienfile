@@ -1,0 +1,86 @@
+use alienfile;
+
+use File::chdir;
+
+plugin 'Probe::CommandLine' => (
+  command => 'lua',
+  args    => [ '-v' ],
+  match   => qr/^Lua/,
+);
+
+configure {
+  requires 'File::chdir' => 0;
+};
+
+share {
+    requires 'Path::Tiny' => 0;
+
+    my $platform = 'generic';
+    for ($^O) {
+        $platform = 'aix'     if /aix/;
+        $platform = 'bsd'     if /^$(open)?bsd/;
+        $platform = 'freebsd' if /freebsd/;
+        $platform = 'linux'   if /linux/;
+        $platform = 'macosx'  if /darwin/;
+        $platform = 'mingw'   if /MSWin32/;
+        $platform = 'solaris' if /solaris/;
+    }
+
+    start_url 'https://www.lua.org/ftp/lua-5.3.4.tar.gz';
+
+    plugin 'Download';
+
+    plugin 'Extract' => 'tar.gz';
+
+    build sub {
+        my ($build) = @_;
+
+        my $build_dir = Path::Tiny::path( $build->install_prop->{extract} );
+        local $CWD = $build_dir;
+
+        $build->system('%{make}', $platform, 'test');
+        if ($platform eq 'mingw') {
+            windows_install($build);
+        }
+        else {
+            $build->system('%{make}', 'install');
+        }
+
+        $build->runtime_prop->{command} = 'lua';
+    };
+
+    gather sub {};
+};
+
+sub windows_install {
+    my ($build) = @_;
+
+    my $tar     = Path::Tiny::path( $build->install_prop->{extract} );
+    my $install = Path::Tiny::path( $build->install_prop->{prefix} );
+
+    my $man = $tar->child('doc');
+    my $src = $tar->child('src');
+
+    my $doc = $install->child('doc');
+    my $bin = $install->child('bin');
+    my $inc = $install->child('include');
+
+    $doc->mkpath;
+    $bin->mkpath;
+    $inc->mkpath;
+
+    $_->copy( $doc->child( $_->basename ) )
+        for $man->children;
+
+    $_->copy( $bin->child( $_->basename ) )
+        for $src->children(qr/[.](exe|dll)$/);
+
+    $_->copy( $inc->child( $_->basename ) )
+        for $src->children(qr/^(
+            luaconf.h  |
+            lua.h      |
+            lualib.h   |
+            lauxlib.h  |
+            lua.hpp
+        )$/x);
+}

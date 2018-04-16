@@ -1,5 +1,14 @@
 Revision history for Perl extension Alien::Lua.
 
+{{NEXT}}
+
+- Port to Dist::Zilla
+- Port away from Alien::Base::ModuleBuild
+- Builds latest version from FTP if on a share install
+
+2.0.2.2  Fri Aug  8 21:16:46 2013
+  - Distribution fixes
+
 2.0.2.2  Fri Aug  8 21:16:46 2013
   - Distribution fixes
 

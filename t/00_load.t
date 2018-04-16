@@ -1,6 +1,10 @@
-#!perl
-use 5.14.0;
-use warnings;
+use Test2::V0;
+use Test::Alien;
+use Alien::Lua;
 
-use Test::More tests => 1;
-BEGIN { use_ok('Alien::Lua') };
+alien_ok 'Alien::Lua';
+
+my $run = run_ok([ Alien::Lua->exe, '-v' ])->exit_is(0);
+$run->success ? $run->note : $run->diag;
+
+done_testing;
