@@ -13,8 +13,9 @@ configure {
 };
 
 share {
-    requires 'Path::Tiny'  => 0;
-    requires 'File::Which' => 0;
+    requires 'Path::Tiny'    => 0;
+    requires 'File::Which'   => 0;
+    requires 'Capture::Tiny' => 0;
 
     my $platform = 'generic';
     for ($^O) {
@@ -36,8 +37,10 @@ share {
     build sub {
         my ($build) = @_;
 
-        my $build_dir = Path::Tiny::path( $build->install_prop->{extract} );
-        local $CWD = $build_dir;
+        my $extract = Path::Tiny::path( $build->install_prop->{extract} );
+        my $install = Path::Tiny::path( $build->install_prop->{prefix} );
+
+        local $CWD = $extract;
 
         $build->runtime_prop->{command} = 'lua';
 
@@ -52,10 +55,17 @@ share {
 
         my @vars = map { uc($_) . '=' . $vars{$_} } keys %vars;
         $build->system( '%{make}', @vars, 'install' );
-    };
 
-    gather sub {};
+        my ($stdout, $stderr, $retval) =
+            Capture::Tiny::capture { $build->system( '%{make}', @vars, 'pc' ) };
+
+        my $tgtpc = $install->child('lib/pkgconfig/lua.pc');
+        $tgtpc->parent->mkpath;
+        $tgtpc->spew($stdout);
+    };
 };
+
+plugin 'PkgConfig' => 'lua';
 
 sub windows_install {
     my ($build) = @_;
